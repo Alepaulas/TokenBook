@@ -1,4 +1,4 @@
-## TokenBook
+# TokenBook
 
-# Equipe
+## Equipe
 _Team Cetus_
