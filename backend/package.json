@@ -1,0 +1,17 @@
+{
+  "name": "ourlibrary-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "testipfs.js",
+  "scripts": {
+    "start": "node testipfs.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
