@@ -37,7 +37,9 @@ try {
 
     const upload = await uploadRequest.json();
     console.log(upload);
-    
+
 } catch (error) {
     console.log(error);
 }
+
+main();
