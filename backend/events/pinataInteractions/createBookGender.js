@@ -1,7 +1,7 @@
 async function main() {
 	try {
 		const data = JSON.stringify({
-			name: "{placeholder}", 
+			name: "{placeholder}",  //nome do gênero a ser adicionado, exemplo: 'horror', 'romance', 'ficção científica".
 		});
 
 		const createGroupRequest = await fetch("https://api.pinata.cloud/groups", {
