@@ -1,0 +1,12 @@
+{
+  "name": "ourlibrary",
+  "version": "1.0.0",
+  "description": "_Team Cetus_",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
