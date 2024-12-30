@@ -3,11 +3,13 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const FormData = require('form-data');
-const fetch = require('node-fetch'); 
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const app = express();
-const upload = multer({ dest: 'uploads/' }); 
+const upload = multer({ dest: 'uploads/' });
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.post('/upload', upload.single('file'), async (req, res) => {
     try {
@@ -26,14 +28,13 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         data.append('file', fs.createReadStream(filePath));
 
         const metadata = JSON.stringify({
-            name: title,
             keyvalues: {
-                title: title,
-                user: user,
-                author: author,
-                description: description,
-                genre: genre,
-                IsPrivate: isPrivate === 'true',
+                title,
+                user,
+                author,
+                description,
+                genre,
+                isPrivate,
             },
         });
         data.append('pinataMetadata', metadata);
@@ -62,7 +63,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         const uploadResponse = await uploadRequest.json();
         console.log("Upload successful:", uploadResponse);
 
-        
         fs.unlinkSync(filePath);
 
         res.status(200).json({ message: 'Upload successful!', ipfsHash: uploadResponse.IpfsHash });
