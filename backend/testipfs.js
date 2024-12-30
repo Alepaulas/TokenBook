@@ -1,11 +1,11 @@
-import ipfs from './config/ipfs.js';
+import ipfs from "./config/ipfs.js";
 
 async function testConnection() {
   try {
-    const id = await ipfs.id(); // Verifica informações do nó IPFS
-    console.log('IPFS client connected:', id);
+    const id = await ipfs.id();
+    console.log("IPFS conectado com sucesso:", id);
   } catch (error) {
-    console.error('Failed to connect to IPFS:', error);
+    console.error("Erro ao conectar ao IPFS:", error);
   }
 }
 
