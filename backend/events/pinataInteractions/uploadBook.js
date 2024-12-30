@@ -4,12 +4,14 @@ const multer = require('multer');
 const fs = require('fs');
 const FormData = require('form-data');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const cors = require('cors');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 app.post('/upload', upload.single('file'), async (req, res) => {
     try {
@@ -28,8 +30,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         data.append('file', fs.createReadStream(filePath));
 
         const metadata = JSON.stringify({
+            title,
             keyvalues: {
-                title,
                 user,
                 author,
                 description,
