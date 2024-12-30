@@ -23,11 +23,14 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         if (!process.env.PINATA_JWT) {
             throw new Error("PINATA_JWT environment variable is not set");
         }
+     
+        const customFileName = `${title || 'default'}.pdf`; 
+        const newFilePath = `uploads/${customFileName}`;
 
-        const filePath = req.file.path;
+        fs.renameSync(req.file.path, newFilePath);
 
         const data = new FormData();
-        data.append('file', fs.createReadStream(filePath));
+        data.append('file', fs.createReadStream(newFilePath), customFileName); 
 
         const metadata = JSON.stringify({
             title,
@@ -65,7 +68,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         const uploadResponse = await uploadRequest.json();
         console.log("Upload successful:", uploadResponse);
 
-        fs.unlinkSync(filePath);
+        fs.unlinkSync(newFilePath);
 
         res.status(200).json({ message: 'Upload successful!', ipfsHash: uploadResponse.IpfsHash });
     } catch (error) {
