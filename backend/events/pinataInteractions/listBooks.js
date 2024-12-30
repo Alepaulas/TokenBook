@@ -1,40 +1,54 @@
-async function main() {
-	try {
-		const queryParams = new URLSearchParams({ status: "pinned" });
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
 
-		queryParams.append("metadata[name]", "hello.txt");
+const app = express();
+app.use(bodyParser.urlencoded({ extended: true })); 
 
-		queryParams.append("groupId", "18893556-de8e-4229-8a9a-27b95468dd3e");
 
-		queryParams.append("mimeType", "application/pdf");
-        //"mimetype" é o tipo de arquivo, application serve para PDF's, pkcs8 e zip's.
-        // fonte: https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types
-        
+app.post('/list-books', async (req, res) => {
+    const { name, groupId, mimeType, pageLimit, pageOffset } = req.body;
 
-		queryParams.append("pageLimit", "50");
+    try {
+        if (!process.env.PINATA_JWT) {
+            throw new Error("PINATA_JWT environment variable is not set");
+        }
 
-		// Add pagination
-		 queryParams.append(
-		 	"pageOffset",
-		 	"50",
-		);
+        const queryParams = new URLSearchParams({ status: "pinned" });
+        if (name) queryParams.append("metadata[name]", name);
+        if (groupId) queryParams.append("groupId", groupId);
+        if (mimeType) queryParams.append("mimeType", mimeType);
+        if (pageLimit) queryParams.append("pageLimit", pageLimit);
+        if (pageOffset) queryParams.append("pageOffset", pageOffset);
 
-		const queryString = queryParams.toString();
+        const queryString = queryParams.toString();
+        const url = `https://api.pinata.cloud/data/pinList${queryString ? `?${queryString}` : ""}`;
 
-		const url = `https://api.pinata.cloud/data/pinList${queryString ? `?${queryString}` : ""}`;
+        const filesRequest = await fetch(url, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${process.env.PINATA_JWT}`,
+            },
+        });
 
-		const filesRequest = await fetch(url, {
-			method: "GET",
-			headers: {
-				Authorization: `Bearer ${process.env.PINATA_JWT}`,
-			},
-		});
+        if (!filesRequest.ok) {
+            throw new Error(`Failed to fetch files: ${filesRequest.statusText}`);
+        }
 
-		const files = await filesRequest.json();
-		console.log(files.rows);
-	} catch (error) {
-		console.log(error);
-	}
-}
+        const files = await filesRequest.json();
 
-main();
+        if (!files.rows || files.rows.length === 0) {
+            return res.status(200).send('No pinned files found.');
+        }
+
+        res.status(200).json(files.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send(error.message);
+    }
+});
+
+app.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
+});
