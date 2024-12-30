@@ -1,11 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true })); 
-
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/list-books', async (req, res) => {
     const { name, groupId, mimeType, pageLimit, pageOffset } = req.body;
@@ -16,7 +15,9 @@ app.post('/list-books', async (req, res) => {
         }
 
         const queryParams = new URLSearchParams({ status: "pinned" });
+
         if (name) queryParams.append("metadata[name]", name);
+        console.log(name);
         if (groupId) queryParams.append("groupId", groupId);
         if (mimeType) queryParams.append("mimeType", mimeType);
         if (pageLimit) queryParams.append("pageLimit", pageLimit);
@@ -42,7 +43,31 @@ app.post('/list-books', async (req, res) => {
             return res.status(200).send('No pinned files found.');
         }
 
-        res.status(200).json(files.rows);
+        if (!name && !groupId && !mimeType && !pageLimit && !pageOffset) {
+            return res.status(200).json(files.rows);
+        }
+
+        const filteredFiles = files.rows.filter(file => {
+            let matches = true;
+
+            if (name && file.metadata && file.metadata.name !== name) {
+                matches = false;
+            }
+            if (groupId && file.groupId !== groupId) {
+                matches = false;
+            }
+            if (mimeType && file.mimeType !== mimeType) {
+                matches = false;
+            }
+
+            return matches;
+        });
+
+        if (filteredFiles.length === 0) {
+            return res.status(200).send('No files matching the search criteria.');
+        }
+
+        res.status(200).json(filteredFiles);
     } catch (error) {
         console.error(error);
         res.status(500).send(error.message);
