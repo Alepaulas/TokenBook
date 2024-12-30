@@ -140,3 +140,6 @@ dist
 # Stores uploaded arquives
 uploads/
 
+# enviroment arquive
+.env 
+
