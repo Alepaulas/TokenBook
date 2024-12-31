@@ -55,10 +55,13 @@ app.post('/list-books', async (req, res) => {
         if (!files.rows || files.rows.length === 0) {
             return res.status(200).send('No pinned files found.');
         }
-
+        
+        const genreArray = genre ? JSON.parse(genre) : [];
+        console.log(genreArray);
+        
         const filteredFiles = files.rows.filter(file => {
             let matches = true;
-
+        
             if (name && file.metadata && !file.metadata.name.toLowerCase().includes(name.toLowerCase())) {
                 matches = false;
             }
@@ -68,17 +71,17 @@ app.post('/list-books', async (req, res) => {
             if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) { 
                 matches = false;
             }
-            if (genre && file.metadata && file.metadata.genre !== genre) { 
+            if (genreArray.length > 0 && file.metadata && Array.isArray(file.metadata.genre) && !genreArray.some(g => file.metadata.genre.includes(g))) { 
                 matches = false;
             }
-
+        
             return matches;
         });
-
+        
         if (filteredFiles.length === 0) {
             return res.status(200).send('No files matching the search criteria.');
         }
-
+        
         res.status(200).json(filteredFiles);
     } catch (error) {
         console.error("Error fetching files:", error);
