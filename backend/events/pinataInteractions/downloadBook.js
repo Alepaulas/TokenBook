@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const app = express();
+const cors = require('cors');
+
+app.use(cors());
 
 app.get('/download', async (req, res) => {
     const { cid } = req.query; 

@@ -2,12 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const cors = require('cors');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
+pp.use(cors());
 
 app.post('/list-books', async (req, res) => {
-    const { name, cid, group, mimeType, pageLimit, pageOffset } = req.body;
+    const { name, cid, gender, mimeType, pageLimit, pageOffset } = req.body;
 
     try {
         if (!process.env.PINATA_JWT) {
