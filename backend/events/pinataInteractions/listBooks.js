@@ -7,7 +7,7 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/list-books', async (req, res) => {
-    const { name, group, mimeType, pageLimit, pageOffset } = req.body;
+    const { name, cid, group, mimeType, pageLimit, pageOffset } = req.body;
 
     try {
         if (!process.env.PINATA_JWT) {
@@ -20,6 +20,8 @@ app.post('/list-books', async (req, res) => {
         console.log('Name:', name);
         if (group) queryParams.append("metadata[group]", group); 
         console.log('Group:', group);
+        if (cid) queryParams.append("cid", cid);
+        console.log('CID:', cid);
         if (mimeType) queryParams.append("metadata[mimeType]", mimeType); 
         console.log('MimeType:', mimeType);
         if (pageLimit) queryParams.append("pageLimit", pageLimit);
@@ -76,7 +78,7 @@ app.post('/list-books', async (req, res) => {
         res.status(200).json(filteredFiles);
     } catch (error) {
         console.error("Error fetching files:", error);
-        res.status(500).send(error.message);
+        res.status(500).send('Failed to fetch files.');
     }
 });
 
