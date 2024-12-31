@@ -7,6 +7,7 @@ const cors = require('cors');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(cors());
+app.use(express.json());
 
 app.post('/create-group', async (req, res) => {
     const { groupName } = req.body;

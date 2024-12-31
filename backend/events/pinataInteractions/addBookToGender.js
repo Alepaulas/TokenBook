@@ -8,6 +8,7 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(cors());
+app.use(express.json());
 
 app.post('/add-book-to-group', async (req, res) => {
 

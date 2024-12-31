@@ -5,11 +5,13 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 const cors = require('cors');
 
 const app = express();
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
+app.use(express.json());
 
 app.post('/list-books', async (req, res) => {
-    const { name, cid, gender, mimeType, pageLimit, pageOffset } = req.body;
+    const { name, cid, group, mimeType, pageLimit, pageOffset } = req.body;
 
     try {
         if (!process.env.PINATA_JWT) {

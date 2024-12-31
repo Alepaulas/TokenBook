@@ -4,6 +4,7 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 const app = express();
 const cors = require('cors');
 
+app.use(express.json());
 app.use(cors());
 
 app.get('/download', async (req, res) => {
