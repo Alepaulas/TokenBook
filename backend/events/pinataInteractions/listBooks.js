@@ -5,13 +5,12 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 const cors = require('cors');
 
 const app = express();
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(express.json());
 
 app.post('/list-books', async (req, res) => {
-    const { name, cid, group, mimeType, pageLimit, pageOffset } = req.body;
+    const { name, cid, group, mimeType, pageLimit, pageOffset, genre } = req.body;
 
     try {
         if (!process.env.PINATA_JWT) {
@@ -24,6 +23,8 @@ app.post('/list-books', async (req, res) => {
         console.log('Name:', name);
         if (group) queryParams.append("metadata[group]", group); 
         console.log('Group:', group);
+        if (genre) queryParams.append("metadata[genre]", genre.toLowerCase());
+        console.log('Genre:', genre);
         if (cid) queryParams.append("cid", cid);
         console.log('CID:', cid);
         if (mimeType) queryParams.append("metadata[mimeType]", mimeType); 
@@ -55,20 +56,19 @@ app.post('/list-books', async (req, res) => {
             return res.status(200).send('No pinned files found.');
         }
 
-        if (!name && !group && !mimeType && !pageLimit && !pageOffset) {
-            return res.status(200).json(files.rows);
-        }
-
         const filteredFiles = files.rows.filter(file => {
             let matches = true;
 
-            if (name && file.metadata && file.metadata.name !== name) {
+            if (name && file.metadata && !file.metadata.name.toLowerCase().includes(name.toLowerCase())) {
                 matches = false;
             }
             if (group && file.metadata && file.metadata.group !== group) { 
                 matches = false;
             }
             if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) { 
+                matches = false;
+            }
+            if (genre && file.metadata && file.metadata.genre !== genre) { 
                 matches = false;
             }
 
