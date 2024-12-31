@@ -6,7 +6,7 @@ const cors = require('cors');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
-pp.use(cors());
+app.use(cors());
 
 app.post('/list-books', async (req, res) => {
     const { name, cid, gender, mimeType, pageLimit, pageOffset } = req.body;
