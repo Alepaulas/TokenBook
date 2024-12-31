@@ -3,9 +3,9 @@ const express = require('express');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const app = express();
 
-app.get('/download/:cid', async (req, res) => {
-    const { cid } = req.params;
-    console.log('Received request for CID:', cid); // Add this line for logging
+app.get('/download', async (req, res) => {
+    const { cid } = req.query; 
+    console.log('Received request for CID:', cid); 
     const url = `https://gateway.pinata.cloud/ipfs/${cid}`;
 
     try {
@@ -13,8 +13,24 @@ app.get('/download/:cid', async (req, res) => {
         if (!response.ok) {
             throw new Error('Failed to fetch file from IPFS');
         }
-        
-        res.setHeader('Content-Disposition', `attachment; filename=${cid}`);
+
+        const metadataUrl = `https://api.pinata.cloud/data/pinList?hashContains=${cid}`;
+        const metadataResponse = await fetch(metadataUrl, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${process.env.PINATA_JWT}`,
+            },
+        });
+
+        if (!metadataResponse.ok) {
+            throw new Error('Failed to fetch metadata from Pinata');
+        }
+
+        const metadata = await metadataResponse.json();
+        const fileMetadata = metadata.rows && metadata.rows[0] && metadata.rows[0].metadata;
+        const fileName = fileMetadata && fileMetadata.name ? fileMetadata.name : cid;
+
+        res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
         res.setHeader('Content-Type', 'application/octet-stream');
         response.body.pipe(res);
     } catch (error) {

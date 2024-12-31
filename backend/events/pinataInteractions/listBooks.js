@@ -7,7 +7,7 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/list-books', async (req, res) => {
-    const { name, groupId, mimeType, pageLimit, pageOffset } = req.body;
+    const { name, group, mimeType, pageLimit, pageOffset } = req.body;
 
     try {
         if (!process.env.PINATA_JWT) {
@@ -17,14 +17,19 @@ app.post('/list-books', async (req, res) => {
         const queryParams = new URLSearchParams({ status: "pinned" });
 
         if (name) queryParams.append("metadata[name]", name);
-        console.log(name);
-        if (groupId) queryParams.append("groupId", groupId);
-        if (mimeType) queryParams.append("mimeType", mimeType);
+        console.log('Name:', name);
+        if (group) queryParams.append("metadata[group]", group); 
+        console.log('Group:', group);
+        if (mimeType) queryParams.append("metadata[mimeType]", mimeType); 
+        console.log('MimeType:', mimeType);
         if (pageLimit) queryParams.append("pageLimit", pageLimit);
+        console.log('PageLimit:', pageLimit);
         if (pageOffset) queryParams.append("pageOffset", pageOffset);
+        console.log('PageOffset:', pageOffset);
 
         const queryString = queryParams.toString();
         const url = `https://api.pinata.cloud/data/pinList${queryString ? `?${queryString}` : ""}`;
+        console.log('URL:', url);
 
         const filesRequest = await fetch(url, {
             method: "GET",
@@ -38,12 +43,13 @@ app.post('/list-books', async (req, res) => {
         }
 
         const files = await filesRequest.json();
+        console.log('Files Response:', files);
 
         if (!files.rows || files.rows.length === 0) {
             return res.status(200).send('No pinned files found.');
         }
 
-        if (!name && !groupId && !mimeType && !pageLimit && !pageOffset) {
+        if (!name && !group && !mimeType && !pageLimit && !pageOffset) {
             return res.status(200).json(files.rows);
         }
 
@@ -53,10 +59,10 @@ app.post('/list-books', async (req, res) => {
             if (name && file.metadata && file.metadata.name !== name) {
                 matches = false;
             }
-            if (groupId && file.groupId !== groupId) {
+            if (group && file.metadata && file.metadata.group !== group) { 
                 matches = false;
             }
-            if (mimeType && file.mimeType !== mimeType) {
+            if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) { 
                 matches = false;
             }
 
@@ -69,7 +75,7 @@ app.post('/list-books', async (req, res) => {
 
         res.status(200).json(filteredFiles);
     } catch (error) {
-        console.error(error);
+        console.error("Error fetching files:", error);
         res.status(500).send(error.message);
     }
 });
