@@ -1,21 +1,15 @@
 import web3 from "../config/blockchainConfig.js";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-import {
-  contractAddress,
-  contractAddress,
-  userAddress,
-} from "../config/info.js";
+import { contractAddress, userAddress } from "../config/info.js";
 
 const {
   abi,
 } = require("../../artifacts/contracts/LibAccess.sol/LibAccess.json");
 
-const contractAddress = contractAddress;
-
 const contract = new web3.eth.Contract(abi, contractAddress);
 
-const bookHash = "teste chote 2"; // colocar aqui o hash do livro
+const bookHash = "123"; // colocar aqui o hash do livro
 const bookOwner = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0"; // endereço do proprietário do livro
 
 async function addBook() {
