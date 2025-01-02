@@ -10,6 +10,7 @@ app.use(express.json());
 
 app.use('/auth', routes.authRoutes);
 app.use('/books', routes.bookRoutes);
+app.use('/blockchain', routes.blockchainRoutes);
 
 const PORT = process.env.PORT || 3000;
 
