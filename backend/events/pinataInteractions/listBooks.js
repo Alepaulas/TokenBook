@@ -23,7 +23,7 @@ app.post('/list-books', async (req, res) => {
         console.log('Name:', name);
         if (group) queryParams.append("metadata[group]", group); 
         console.log('Group:', group);
-        if (genre) queryParams.append("metadata[genre]", genre.toLowerCase());
+        if (genre) queryParams.append("metadata[genre]", genre.toLowerCase());  // Gênero passa como string
         console.log('Genre:', genre);
         if (cid) queryParams.append("cid", cid);
         console.log('CID:', cid);
@@ -55,13 +55,13 @@ app.post('/list-books', async (req, res) => {
         if (!files.rows || files.rows.length === 0) {
             return res.status(200).send('No pinned files found.');
         }
-        
-        const genreArray = genre ? JSON.parse(genre) : [];
-        console.log(genreArray);
-        
+
+        const genreArray = genre ? genre.toLowerCase().split(',').map(g => g.trim()) : [];
+        console.log('Genre Array:', genreArray);
+
         const filteredFiles = files.rows.filter(file => {
             let matches = true;
-        
+
             if (name && file.metadata && !file.metadata.name.toLowerCase().includes(name.toLowerCase())) {
                 matches = false;
             }
@@ -71,23 +71,27 @@ app.post('/list-books', async (req, res) => {
             if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) { 
                 matches = false;
             }
-            if (genreArray.length > 0 && file.metadata && Array.isArray(file.metadata.genre) && !genreArray.some(g => file.metadata.genre.includes(g))) { 
-                matches = false;
+            if (genreArray.length > 0 && file.metadata && file.metadata.keyvalues) {
+                const fileGenres = file.metadata.keyvalues.genre ? file.metadata.keyvalues.genre.toLowerCase().split(',').map(g => g.trim()) : [];
+                if (fileGenres.length === 0 || !fileGenres.some(fileGenre => genreArray.some(g => fileGenre.startsWith(g)))) {
+                    matches = false;
+                }
             }
-        
+
             return matches;
         });
-        
+
         if (filteredFiles.length === 0) {
             return res.status(200).send('No files matching the search criteria.');
         }
-        
+
         res.status(200).json(filteredFiles);
     } catch (error) {
         console.error("Error fetching files:", error);
         res.status(500).send('Failed to fetch files.');
     }
 });
+
 
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
