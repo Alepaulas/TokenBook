@@ -1,9 +1,11 @@
-import Web3 from 'web3';
-import abi from './LibAccessABI.json';
+import Web3 from "web3";
+import { nodeAddress } from "./info.js";
 
-const web3 = new Web3('substituit pelo URL web3'); 
-const contractAddress = 'substituit pelo endereço do contrat';   //
+const web3 = new Web3(new Web3.providers.HttpProvider(nodeAddress));
 
-const contract = new web3.eth.Contract(abi, contractAddress);
+web3.eth.net
+  .isListening()
+  .then(() => console.log("Conectado ao nó Hardhat"))
+  .catch((e) => console.log("Algo deu errado", e));
 
-export { web3, contract };
+export default web3;
