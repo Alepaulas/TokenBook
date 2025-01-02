@@ -1,8 +1,7 @@
 import Web3 from "web3";
+import { nodeAddress } from "./info.js";
 
-const web3 = new Web3(
-  new Web3.providers.HttpProvider("http://127.0.0.1:8545/")
-);
+const web3 = new Web3(new Web3.providers.HttpProvider(nodeAddress));
 
 web3.eth.net
   .isListening()
