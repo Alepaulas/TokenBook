@@ -1,15 +1,10 @@
-require('dotenv').config();
 const express = require('express');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const app = express();
-const cors = require('cors');
+const router = express.Router();
 
-app.use(express.json());
-app.use(cors());
-
-app.get('/download', async (req, res) => {
-    const { cid } = req.query; 
-    console.log('Received request for CID:', cid); 
+router.get('/', async (req, res) => {
+    const { cid } = req.query;
+    console.log('Received request for CID:', cid);
     const url = `https://gateway.pinata.cloud/ipfs/${cid}`;
 
     try {
@@ -43,6 +38,4 @@ app.get('/download', async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
-});
+module.exports = router;

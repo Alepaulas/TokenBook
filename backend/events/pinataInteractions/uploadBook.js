@@ -1,19 +1,12 @@
-require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const FormData = require('form-data');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const cors = require('cors');
-
-const app = express();
+const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-
-app.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/', upload.single('file'), async (req, res) => {
     try {
         const { title, user, author, description, genre, isPrivate } = req.body;
 
@@ -23,7 +16,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         if (!process.env.PINATA_JWT) {
             throw new Error("PINATA_JWT environment variable is not set");
         }
-     
+
         const customFileName = `${title || 'default'}.pdf`; 
         const newFilePath = `uploads/${customFileName}`;
 
@@ -77,6 +70,4 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
-});
+module.exports = router;
