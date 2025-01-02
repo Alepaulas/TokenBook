@@ -23,7 +23,7 @@ app.post('/list-books', async (req, res) => {
         console.log('Name:', name);
         if (group) queryParams.append("metadata[group]", group); 
         console.log('Group:', group);
-        if (genre) queryParams.append("metadata[genre]", genre.toLowerCase());  // Gênero passa como string
+        if (genre) queryParams.append("metadata[genre]", genre.toLowerCase());
         console.log('Genre:', genre);
         if (cid) queryParams.append("cid", cid);
         console.log('CID:', cid);
