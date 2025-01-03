@@ -1,21 +1,11 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "testipfs.js",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "form-data": "^4.0.1",
-    "install": "^0.13.0",
-    "multer": "^1.4.5-lts.1",
-    "node-fetch": "^3.3.2",
-    "npm": "^11.0.0"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC"
-}
+    "name": "ourlibrary-backend",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "testipfs.js",
+    "scripts": {
+      "start": "node testipfs.js",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    }
+  }
+  

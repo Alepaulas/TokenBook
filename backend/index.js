@@ -1,17 +1,19 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+import express from 'express';
+import dotenv from 'dotenv';
+import routes from './routes/index.js';
+
+dotenv.config();
 
 const app = express();
 
 app.use(express.json());
-app.use(cors());
 
-app.use('/download', require('./events/pinataInteractions/downloadBook'));
-app.use('/list-books', require('./events/pinataInteractions/listBooks'));
-app.use('/upload', require('./events/pinataInteractions/uploadBook'));
+app.use('/auth', routes.authRoutes);
+app.use('/books', routes.bookRoutes);
+app.use('/blockchain', routes.blockchainRoutes);
 
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
