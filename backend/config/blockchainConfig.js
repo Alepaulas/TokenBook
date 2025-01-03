@@ -8,4 +8,6 @@ web3.eth.net
   .then(() => console.log("Conectado ao nó Hardhat"))
   .catch((e) => console.log("Algo deu errado", e));
 
+  export const contract = new web3.eth.Contract(contractABI, contractAddress);
+
 export default web3;

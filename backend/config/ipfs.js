@@ -4,9 +4,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const ipfs = create({
-  host: process.env.IPFS_HOST || "localhost",
-  port: process.env.IPFS_PORT || "5001",
-  protocol: process.env.IPFS_PROTOCOL || "http",
+  host: "127.0.0.1",
+  port: "5001",
+  protocol: "http",
 });
 
 export default ipfs;

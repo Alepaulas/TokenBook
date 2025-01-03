@@ -1,6 +1,6 @@
-const { salvarLivroNoBancodeDados, buscarLivros } = require("../services/livroService");
+import { salvarLivroNoBancodeDados, buscarLivros } from '../services/livroService.js';
 
-async function InserirLivro(dados) {
+export async function InserirLivro(dados) {
   try {
     console.log("Novo livro inserido na rede IPFS:");
     console.log("ID:", dados.id);
@@ -20,7 +20,7 @@ async function InserirLivro(dados) {
   }
 }
 
-async function RequisitarLivro(dados) {
+export async function RequisitarLivro(dados) {
   try {
     console.log("Livro requisitado pelo usuário:", dados.usuario);
     console.log("ID do Livro:", dados.id);
@@ -28,5 +28,3 @@ async function RequisitarLivro(dados) {
     console.error("Erro ao registrar requisição do livro:", error);
   }
 }
-
-module.exports = { InserirLivro, RequisitarLivro };
