@@ -1,40 +1,85 @@
-async function main() {
-	try {
-		const queryParams = new URLSearchParams({ status: "pinned" });
+const express = require('express');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const router = express.Router();
 
-		queryParams.append("metadata[name]", "hello.txt");
+router.post('/', async (req, res) => {
+    const { name, cid, group, mimeType, pageLimit, pageOffset, genre } = req.body;
 
-		queryParams.append("groupId", "18893556-de8e-4229-8a9a-27b95468dd3e");
+    try {
+        if (!process.env.PINATA_JWT) {
+            throw new Error("PINATA_JWT environment variable is not set");
+        }
 
-		queryParams.append("mimeType", "application/pdf");
-        //"mimetype" é o tipo de arquivo, application serve para PDF's, pkcs8 e zip's.
-        // fonte: https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types
-        
+        const queryParams = new URLSearchParams({ status: "pinned" });
+        if (pageLimit) queryParams.append("pageLimit", pageLimit);
+        if (pageOffset) queryParams.append("pageOffset", pageOffset);
 
-		queryParams.append("pageLimit", "50");
+        const queryString = queryParams.toString();
+        const url = `https://api.pinata.cloud/data/pinList${queryString ? `?${queryString}` : ""}`;
 
-		// Add pagination
-		 queryParams.append(
-		 	"pageOffset",
-		 	"50",
-		);
+        const filesRequest = await fetch(url, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${process.env.PINATA_JWT}`,
+            },
+        });
 
-		const queryString = queryParams.toString();
+        if (!filesRequest.ok) {
+            throw new Error(`Failed to fetch files: ${filesRequest.statusText}`);
+        }
 
-		const url = `https://api.pinata.cloud/data/pinList${queryString ? `?${queryString}` : ""}`;
+        const files = await filesRequest.json();
 
-		const filesRequest = await fetch(url, {
-			method: "GET",
-			headers: {
-				Authorization: `Bearer ${process.env.PINATA_JWT}`,
-			},
-		});
+        if (!files.rows || files.rows.length === 0) {
+            return res.status(200).send('No pinned files found.');
+        }
 
-		const files = await filesRequest.json();
-		console.log(files.rows);
-	} catch (error) {
-		console.log(error);
-	}
-}
+        if (cid) {
+            const fileByCid = files.rows.find(file => file.ipfs_pin_hash === cid);
+            if (fileByCid) {
+                return res.status(200).json([fileByCid]);
+            } else {
+                return res.status(200).send('No files found with the specified CID.');
+            }
+        }
 
-main();
+        if (!name && !group && !mimeType && (!genre || genre.length === 0)) {
+            return res.status(200).json(files.rows);
+        }
+
+        const genreArray = genre || [];
+
+        const filteredFiles = files.rows.filter(file => {
+            let matches = true;
+
+            if (name && file.metadata && !file.metadata.name.toLowerCase().includes(name.toLowerCase())) {
+                matches = false;
+            }
+            if (group && file.metadata && file.metadata.group !== group) { 
+                matches = false;
+            }
+            if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) { 
+                matches = false;
+            }
+            if (genreArray.length > 0 && file.metadata && file.metadata.keyvalues) {
+                const fileGenres = file.metadata.keyvalues.genre ? file.metadata.keyvalues.genre.split(',').map(g => parseInt(g.trim(), 10)) : [];
+                if (fileGenres.length === 0 || !fileGenres.some(fileGenre => genreArray.includes(fileGenre))) {
+                    matches = false;
+                }
+            }
+
+            return matches;
+        });
+
+        if (filteredFiles.length === 0) {
+            return res.status(200).send('No files matching the search criteria.');
+        }
+
+        res.status(200).json(filteredFiles);
+    } catch (error) {
+        console.error("Error fetching files:", error);
+        res.status(500).send('Failed to fetch files.');
+    }
+});
+
+module.exports = router;

@@ -1,28 +1,44 @@
-require('dotenv').config(); 
+const express = require('express');
+const multer = require('multer');
 const fs = require('fs');
 const FormData = require('form-data');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const router = express.Router();
+const upload = multer({ dest: 'uploads/' });
 
-async function main() {
+router.post('/', upload.single('file'), async (req, res) => {
     try {
+        const { title, user, author, description, genre, isPrivate } = req.body;
+
+        if (!req.file) {
+            return res.status(400).send('No file uploaded.');
+        }
+        if (!process.env.PINATA_JWT) {
+            throw new Error("PINATA_JWT environment variable is not set");
+        }
+
+        const customFileName = `${title || 'default'}.pdf`; 
+        const newFilePath = `uploads/${customFileName}`;
+
+        fs.renameSync(req.file.path, newFilePath);
+
         const data = new FormData();
-        data.append('file', fs.createReadStream('hello.txt'));
+        data.append('file', fs.createReadStream(newFilePath), customFileName); 
 
         const metadata = JSON.stringify({
-            name: "Testezada",
+            title,
             keyvalues: {
-                title: "Sample Title",
-                user: "Sample User",
-                id: "12345",
-                author: "Author Name",
-                description: "A sample description",
-                IsPrivate: "false",
+                user,
+                author,
+                description,
+                genre,
+                isPrivate,
             },
         });
         data.append('pinataMetadata', metadata);
 
         const options = JSON.stringify({
             cidVersion: 1,
-            groupId: "our-Library",
         });
         data.append('pinataOptions', options);
 
@@ -39,14 +55,19 @@ async function main() {
 
         if (!uploadRequest.ok) {
             console.error("Upload failed:", await uploadRequest.text());
-        } else {
-            const upload = await uploadRequest.json();
-            console.log("Upload successful:", upload);
+            return res.status(500).send('Upload to IPFS failed.');
         }
 
+        const uploadResponse = await uploadRequest.json();
+        console.log("Upload successful:", uploadResponse);
+
+        fs.unlinkSync(newFilePath);
+
+        res.status(200).json({ message: 'Upload successful!', ipfsHash: uploadResponse.IpfsHash });
     } catch (error) {
         console.error("An error occurred:", error);
+        res.status(500).send('An internal error occurred.');
     }
-}
+});
 
-main();
+module.exports = router;
