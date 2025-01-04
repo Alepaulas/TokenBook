@@ -1,9 +1,19 @@
 const express = require('express');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const router = express.Router();
+import web3 from "../config/blockchainConfig.js";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const { abi } = require("../../artifacts/contracts/LibAccess.sol/LibAccess.json");
+const { contractAddress } = require("../config/info.js");
+const { checkAccess } = require("../../blockchainEvents/hasAccess.js");
+
+const contract = new web3.eth.Contract(abi, contractAddress);
+
+
 
 router.post('/', async (req, res) => {
-    const { name, cid, group, mimeType, pageLimit, pageOffset, genre } = req.body;
+    const { name, cid, group, mimeType, pageLimit, pageOffset, genre, user } = req.body;
 
     try {
         if (!process.env.PINATA_JWT) {
@@ -34,31 +44,22 @@ router.post('/', async (req, res) => {
             return res.status(200).send('No pinned files found.');
         }
 
-        if (cid) {
-            const fileByCid = files.rows.find(file => file.ipfs_pin_hash === cid);
-            if (fileByCid) {
-                return res.status(200).json([fileByCid]);
-            } else {
-                return res.status(200).send('No files found with the specified CID.');
-            }
-        }
-
-        if (!name && !group && !mimeType && (!genre || genre.length === 0)) {
-            return res.status(200).json(files.rows);
-        }
-
         const genreArray = genre || [];
+        const filteredFiles = [];
 
-        const filteredFiles = files.rows.filter(file => {
+        for (const file of files.rows) {
             let matches = true;
 
+            if (cid && file.ipfs_pin_hash !== cid) {
+                matches = false;
+            }
             if (name && file.metadata && !file.metadata.name.toLowerCase().includes(name.toLowerCase())) {
                 matches = false;
             }
-            if (group && file.metadata && file.metadata.group !== group) { 
+            if (group && file.metadata && file.metadata.group !== group) {
                 matches = false;
             }
-            if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) { 
+            if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) {
                 matches = false;
             }
             if (genreArray.length > 0 && file.metadata && file.metadata.keyvalues) {
@@ -68,8 +69,14 @@ router.post('/', async (req, res) => {
                 }
             }
 
-            return matches;
-        });
+            if (matches) {
+                const bookHash = file.ipfs_pin_hash;
+                const hasAccessToFile = !(await checkAccess(bookHash, user));
+                if (hasAccessToFile) {
+                    filteredFiles.push(file);
+                }
+            }
+        }
 
         if (filteredFiles.length === 0) {
             return res.status(200).send('No files matching the search criteria.');

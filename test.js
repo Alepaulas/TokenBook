@@ -8,9 +8,15 @@ const FormData = require('form-data');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
-const {addBook} = require("../../blockchainEvents/addBook.js");
 
 const contract = new web3.eth.Contract(abi, contractAddress);
+
+async function addBook(bookHash, bookOwner) {
+    const accounts = await web3.eth.getAccounts();
+    const receipt = await contract.methods.addBook(bookHash, bookOwner).send({ from: accounts[0] });
+    console.log("Livro adicionado com sucesso!");
+    receipt.events && console.log("Eventos emitidos:", receipt.events);
+}
 
 router.post('/', upload.single('file'), async (req, res) => {
     try {
@@ -70,7 +76,10 @@ router.post('/', upload.single('file'), async (req, res) => {
    
         fs.unlinkSync(newFilePath);
 
-        await addBook(uploadResponse.IpfsHash, user);
+      
+        const bookHash = uploadResponse.IpfsHash;
+        const bookOwner = user; 
+        await addBook(bookHash, bookOwner);
 
         res.status(200).json({ message: 'Upload and book registration successful!', ipfsHash: bookHash });
     } catch (error) {
