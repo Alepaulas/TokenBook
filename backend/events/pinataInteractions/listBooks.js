@@ -1,16 +1,8 @@
 const express = require('express');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const router = express.Router();
-import web3 from "../config/blockchainConfig.js";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const { abi } = require("../../artifacts/contracts/LibAccess.sol/LibAccess.json");
-const { contractAddress } = require("../config/info.js");
+const { createRequire } = require("module");
 const { checkAccess } = require("../../blockchainEvents/hasAccess.js");
-
-const contract = new web3.eth.Contract(abi, contractAddress);
-
-
 
 router.post('/', async (req, res) => {
     const { name, cid, group, mimeType, pageLimit, pageOffset, genre, user } = req.body;

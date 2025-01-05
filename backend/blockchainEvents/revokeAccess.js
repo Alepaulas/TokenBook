@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 
 const {
   abi,
-} = require("../../artifacts/contracts/LibAccess.sol/LibAccess.json");
+} = require("../artifacts/contracts/LibAccess.sol/LibAccess.json");
 
 const contract = new web3.eth.Contract(abi, contractAddress);
 
@@ -28,4 +28,3 @@ async function revokeAccess() {
   }
 }
 
-revokeAccess();
