@@ -30,21 +30,22 @@ contract LibAccess {
         require(!books[bookHash], "This book has already been added.");
         books[bookHash] = true; 
         bookOwners[bookHash] = bookOwner; 
-        noAccess[bookHash][bookOwner] = false;
+        noAccess[bookHash][bookOwner] = true;
+        
         emit BookAdded(bookHash); 
     }
 
 
     function grantAccess(string memory bookHash, address user, address bookOwner) public onlyOwner onlyOwnerBook(bookHash, bookOwner) {
         require(books[bookHash], "Book not found.");
-        noAccess[bookHash][user] = false; 
+        noAccess[bookHash][user] = true; 
         emit AccessGranted(bookHash, user); 
     }
 
     function revokeAccess(string memory bookHash, address user, address bookOwner) public onlyOwner onlyOwnerBook(bookHash, bookOwner) {
         require(books[bookHash], "Book not found.");
         require(bookOwner != user, "You cannot revoke the permission of the book owner.");
-        noAccess[bookHash][user] = true; 
+        noAccess[bookHash][user] = false; 
         emit AccessRevoked(bookHash, user); 
     }
 

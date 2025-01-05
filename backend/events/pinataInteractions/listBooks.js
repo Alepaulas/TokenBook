@@ -1,13 +1,15 @@
 const express = require('express');
+const bodyParser = require('body-parser');
+const { checkAccess } = require('../../blockchainEvents/hasAccess');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const router = express.Router();
-const { createRequire } = require("module");
-const { checkAccess } = require("../../blockchainEvents/hasAccess.js");
+router.use(bodyParser.urlencoded({ extended: true }));
 
 router.post('/', async (req, res) => {
     const { name, cid, group, mimeType, pageLimit, pageOffset, genre, user } = req.body;
 
     try {
+        console.log(req.body);
         if (!process.env.PINATA_JWT) {
             throw new Error("PINATA_JWT environment variable is not set");
         }
@@ -36,22 +38,37 @@ router.post('/', async (req, res) => {
             return res.status(200).send('No pinned files found.');
         }
 
-        const genreArray = genre || [];
-        const filteredFiles = [];
-
-        for (const file of files.rows) {
-            let matches = true;
-
-            if (cid && file.ipfs_pin_hash !== cid) {
-                matches = false;
+        if (cid) {
+            const fileByCid = files.rows.find(file => file.ipfs_pin_hash === cid);
+            if (fileByCid) {
+                return res.status(200).json([fileByCid]);
+            } else {
+                return res.status(200).send('No files found with the specified CID.');
             }
+        }
+
+        if (!name && !group && !mimeType && (!genre || genre.length === 0)) {
+            return res.status(200).json(files.rows);
+        }
+
+        const genreArray = genre || [];
+
+        const filteredFiles = files.rows.filter(file => {
+            let matches = true;
+            console.log(checkAccess(file.ipfs_pin_hash, user));
+            if (file.metadata.keyvalues.isPrivate === 'true'){
+                if(!checkAccess(file.ipfs_pin_hash, user)){
+                    matches = false;
+                }
+            }
+
             if (name && file.metadata && !file.metadata.name.toLowerCase().includes(name.toLowerCase())) {
                 matches = false;
             }
-            if (group && file.metadata && file.metadata.group !== group) {
+            if (group && file.metadata && file.metadata.group !== group) { 
                 matches = false;
             }
-            if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) {
+            if (mimeType && file.metadata && file.metadata.mimeType !== mimeType) { 
                 matches = false;
             }
             if (genreArray.length > 0 && file.metadata && file.metadata.keyvalues) {
@@ -61,14 +78,8 @@ router.post('/', async (req, res) => {
                 }
             }
 
-            if (matches) {
-                const bookHash = file.ipfs_pin_hash;
-                const hasAccessToFile = !(await checkAccess(bookHash, user));
-                if (hasAccessToFile) {
-                    filteredFiles.push(file);
-                }
-            }
-        }
+            return matches;
+        });
 
         if (filteredFiles.length === 0) {
             return res.status(200).send('No files matching the search criteria.');
