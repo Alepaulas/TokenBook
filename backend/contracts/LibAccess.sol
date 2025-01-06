@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 contract LibAccess {
     address public owner;
     mapping(string => bool) private books; 
-    mapping(string => mapping(address => bool)) private noAccess; 
+    mapping(string => mapping(address => bool)) private access; 
     mapping(string => address) private bookOwners; 
 
     event BookAdded(string bookHash);
@@ -30,25 +30,26 @@ contract LibAccess {
         require(!books[bookHash], "This book has already been added.");
         books[bookHash] = true; 
         bookOwners[bookHash] = bookOwner; 
-        noAccess[bookHash][bookOwner] = false;
+        access[bookHash][bookOwner] = true;
+        grantAccess(bookHash, bookOwner, bookOwner);
         emit BookAdded(bookHash); 
     }
 
 
     function grantAccess(string memory bookHash, address user, address bookOwner) public onlyOwner onlyOwnerBook(bookHash, bookOwner) {
         require(books[bookHash], "Book not found.");
-        noAccess[bookHash][user] = false; 
+        access[bookHash][user] = true; 
         emit AccessGranted(bookHash, user); 
     }
 
     function revokeAccess(string memory bookHash, address user, address bookOwner) public onlyOwner onlyOwnerBook(bookHash, bookOwner) {
         require(books[bookHash], "Book not found.");
         require(bookOwner != user, "You cannot revoke the permission of the book owner.");
-        noAccess[bookHash][user] = true; 
+        access[bookHash][user] = false; 
         emit AccessRevoked(bookHash, user); 
     }
 
     function hasAccess(string memory bookHash, address user) public view returns (bool) {
-        return noAccess[bookHash][user]; 
+        return access[bookHash][user]; 
     }
 }

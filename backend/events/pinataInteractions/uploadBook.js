@@ -6,6 +6,7 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 const {addBook} = require("../../blockchainEvents/addBook.js");
+const {checkAccess} = require("../../blockchainEvents/hasAccess.js");
 
 router.post('/', upload.single('file'), async (req, res) => {
     try {
@@ -66,6 +67,7 @@ router.post('/', upload.single('file'), async (req, res) => {
         fs.unlinkSync(newFilePath);
 
         await addBook(uploadResponse.IpfsHash, user);
+        console.log (await checkAccess(uploadResponse.IpfsHash, user));
 
         res.status(200).json({ message: 'Upload and book registration successful!', ipfsHash: uploadResponse.IpfsHash });
     } catch (error) {
