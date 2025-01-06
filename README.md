@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/avictormorais/token-book/refs/heads/main/src/assets/icon.png" width="150" height="150" alt="Posterfy Logo">
+</p>
+
+<h1 align="center">Token Book</h1>
 
 
 <p align="center">
