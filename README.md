@@ -2,6 +2,7 @@
   <img src="https://raw.githubusercontent.com/avictormorais/token-book/refs/heads/main/src/assets/icon.png" width="150" height="150" alt="Posterfy Logo">
 </p>
 
+
 <h1 align="center">Token Book</h1>
 
 
@@ -13,7 +14,10 @@ Tokenbook é um acervo digital de livros que usa um ambiente Ethereum proporcion
 
 O front-end e configurações da blockchain e contratos estão disponíveis no seguinte repositório: [TokenBook front](https://github.com/avictormorais/token-book)
 
-É necessária uma chave de API do pinata que pode ser obtida gratuitamente em [aqui](https://pinata.cloud/)
+## requisitos:
+
+Uma conta no [pinata](https://pinata.cloud/) para se obter a GATEWAY e a JWT geradas na criação da chave da api
+Node.js instalado no sistema
 
 # ⚡Iniciar back-end⚡
 
