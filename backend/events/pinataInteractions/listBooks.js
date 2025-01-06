@@ -9,7 +9,6 @@ router.post('/', async (req, res) => {
     const { name, cid, group, mimeType, pageLimit, pageOffset, genre, user } = req.body;
 
     try {
-        console.log(req.body);
         if (!process.env.PINATA_JWT) {
             throw new Error("PINATA_JWT environment variable is not set");
         }
@@ -54,9 +53,7 @@ router.post('/', async (req, res) => {
         const filteredFiles = await Promise.all(
             files.rows.map(async (file) => {
                 let matches = true;
-                console.log(file.metadata.keyvalues.isPrivate === 'true');
                 
-        
                 if (name && file.metadata && !file.metadata.name.toLowerCase().includes(name.toLowerCase())) {
                     matches = false;
                 }
@@ -82,9 +79,7 @@ router.post('/', async (req, res) => {
                     if (!accessGranted) {
                         matches = false;
                     }
-                    console.log(accessGranted);
                 }
-                console.log(matches);
         
                 return matches ? file : null;
             })

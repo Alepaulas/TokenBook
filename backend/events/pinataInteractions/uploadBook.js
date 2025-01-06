@@ -67,7 +67,6 @@ router.post('/', upload.single('file'), async (req, res) => {
         fs.unlinkSync(newFilePath);
 
         await addBook(uploadResponse.IpfsHash, user);
-        console.log (await checkAccess(uploadResponse.IpfsHash, user));
 
         res.status(200).json({ message: 'Upload and book registration successful!', ipfsHash: uploadResponse.IpfsHash });
     } catch (error) {
