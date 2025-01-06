@@ -17,6 +17,7 @@ O front-end e configurações da blockchain e contratos estão disponíveis no s
 ## requisitos:
 
 Uma conta no [pinata](https://pinata.cloud/) para se obter a GATEWAY e a JWT geradas na criação da chave da api
+
 Node.js instalado no sistema
 
 # ⚡Iniciar back-end⚡
